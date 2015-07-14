@@ -14,6 +14,7 @@
     self.loginPassword = ko.observable();
 
     function showError(jqXHR) {
+        console.log("ERROR " + jqXHR);
         self.result(jqXHR.status + ': ' + jqXHR.statusText);
     }
 
