@@ -8,11 +8,22 @@ namespace LocalAccountsApp.Controllers
 {
     public class HomeController : Controller
     {
+        
         public ActionResult Index()
         {
-            ViewBag.Title = "Home Page";
+            ViewBag.Title = "Home Page (Knockout)";
 
             return View();
         }
+
+        public ActionResult Angular()
+        {
+            ViewBag.Title = "Home Page (AngularJS)";
+
+            return View("Index-Angular");
+        }
+                                                                            
+    
     }
+
 }
