@@ -1,85 +1,89 @@
-﻿function ViewModel() {
-    var self = this;
+﻿var app = angular.module('MyApp', []);
 
-    var tokenKey = 'accessToken';
+app.controller("MyController", function AppController($scope, $http) {
+    $scope.errorMessage = {};
 
-    self.result = ko.observable();
-    self.user = ko.observable();
+    $scope.tokenKey = 'accessToken';
 
-    self.registerEmail = ko.observable();
-    self.registerPassword = ko.observable();
-    self.registerPassword2 = ko.observable();
+    $scope.result = "";
+    $scope.user = "";
 
-    self.loginEmail = ko.observable();
-    self.loginPassword = ko.observable();
+    $scope.registerEmail = "";
+    $scope.registerPassword = "";
+    $scope.registerPassword2 = "";
 
-    function showError(jqXHR) {
-        console.log("ERROR " + jqXHR);
-        self.result(jqXHR.status + ': ' + jqXHR.statusText);
+    $scope.loginEmail = "";
+    $scope.loginPassword = "";
+
+    $scope.showError = function showError(obj) {
+        console.log(obj);
+        $scope.errorMessage = {message: obj};
     }
 
-    self.callApi = function () {
-        self.result('');
+    $scope.callApi = function () {
+        $scope.result  = "";
 
-        var token = sessionStorage.getItem(tokenKey);
+        var token = sessionStorage.getItem($scope.tokenKey);
         var headers = {};
         if (token) {
             headers.Authorization = 'Bearer ' + token;
         }
+        
+        $http.get("/api/values", { headers: headers }).success(function (data) {
+            $scope.errorMessage = {};
+            $scope.result = data;                        
+        }).error(function(data){
+            $scope.showError(data);
+        });
 
-        $.ajax({
-            type: 'GET',
-            url: '/api/values',
-            headers: headers
-        }).done(function (data) {
-            self.result(data);
-        }).fail(showError);
     }
 
-    self.register = function () {
-        self.result('');
+    $scope.register = function () {
+        $scope.result = "";
 
         var data = {
-            Email: self.registerEmail(),
-            Password: self.registerPassword(),
-            ConfirmPassword: self.registerPassword2()
+            Email: $scope.registerEmail,
+            Password: $scope.registerPassword,
+            ConfirmPassword: $scope.registerPassword2
         };
 
-        $.ajax({
-            type: 'POST',
-            url: '/api/Account/Register',
-            contentType: 'application/json; charset=utf-8',
-            data: JSON.stringify(data)
-        }).done(function (data) {
-            self.result("Done!");
-        }).fail(showError);
+        $http.post("/api/Account/Register", data).success(function (data) {
+            $scope.errorMessage = {};
+            $scope.result = "Done!";
+        }).error(function (data) {
+            $scope.showError(data);
+        });
+
     }
 
-    self.login = function () {
-        self.result('');
+    $scope.login = function () {
+        $scope.result = "";
 
         var loginData = {
             grant_type: 'password',
-            username: self.loginEmail(),
-            password: self.loginPassword()
+            username: $scope.loginEmail,
+            password: $scope.loginPassword
         };
 
-        $.ajax({
-            type: 'POST',
-            url: '/Token',
-            data: loginData
-        }).done(function (data) {
-            self.user(data.userName);
-            // Cache the access token in session storage.
-            sessionStorage.setItem(tokenKey, data.access_token);
-        }).fail(showError);
+        var transform = function (data) {
+            return $.param(data);
+        }
+
+        $http.post("/Token", loginData, { headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, transformRequest: transform}).success(function (data) {
+            $scope.errorMessage = {};
+            $scope.user = data.userName;
+            sessionStorage.setItem($scope.tokenKey, data.access_token);
+        }).error(function (data) {
+            $scope.showError(data);
+        });
     }
 
-    self.logout = function () {
-        self.user('');
-        sessionStorage.removeItem(tokenKey)
+    $scope.logout = function () {
+        $scope.errorMessage = {};
+        $scope.user = "";
+        sessionStorage.removeItem($scope.tokenKey);
     }
-}
 
-var app = new ViewModel();
-ko.applyBindings(app);
+
+});
+
