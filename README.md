@@ -1,4 +1,4 @@
-Secure a Web API with Individual Accounts and Local Login
+Secure a Web API with Individual Accounts and Local Login (AngularJS)
 ================
 
 This sample shows how to perform local login in ASP.NET Web API.
